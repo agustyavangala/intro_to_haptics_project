@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+<!--simple pbot-->
+
+<robot name="RRBot">
+    <link name="base_link">
+        <inertial>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <mass value="0.001" />
+            <inertia ixx="0.001" iyy="0.001" izz="0.001" ixy="0" ixz="0" iyz="0" />
+        </inertial>
+        <!-- <collision>
+            <origin xyz="0.0 0.0 -1.0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.25" length="1.0"/>
+            </geometry>
+        </collision> -->
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.1" length="0.2"/>
+            </geometry>
+            <material name="link0">
+                <color rgba="0.7 0.4 0.4 1.0" />
+            </material>
+        </visual>
+    </link>
+    <link name="link0">
+        <inertial>
+            <origin xyz="0.5 0.0 0.0" rpy="0 0 0" />
+            <mass value="1" />
+            <inertia ixx="0.00045" iyy="0.00045" izz="0.00045" ixy="0" ixz="0" iyz="0" />
+        </inertial>
+        <!-- <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.03" length="1.0"/>
+            </geometry>
+        </collision> -->
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 1.5707 0" />
+            <geometry>
+                <cylinder radius="0.03" length="1.0"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <link name="link1">
+        <inertial>
+            <origin xyz="0.5 0.0 0.0" rpy="0 0 0" />
+            <mass value="1" />
+            <inertia ixx="0.00045" iyy="0.00045" izz="0.00045" ixy="0" ixz="0" iyz="0" />
+        </inertial>
+        <!-- <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.03" length="1.0"/>
+            </geometry>
+        </collision> -->
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0 1.5707 0" />
+            <geometry>
+                <cylinder radius="0.03" length="1.0"/>
+            </geometry>
+        </visual>
+        <visual>
+            <origin xyz="1.0 0.0 0.0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.2 0.2 0.2"/>
+            </geometry>
+            <material name="link1">
+                <color rgba="0.2 0.8 0.4 1.0" />
+            </material>
+        </visual>
+    </link>
+    
+    <joint name="j0" type="revolute">
+        <parent link="base_link" />
+        <child link="link0" />
+        <origin xyz="0.000000 0.000000 0.000000" rpy="-0.000000 0.000000 -0.000000" />
+        <axis xyz="0 0 1" />
+        <limit lower="-2.967" upper="2.967" effort="176" velocity="1.7104" />
+    </joint>
+
+    <joint name="j1" type="revolute">
+        <parent link="link0" />
+        <child link="link1" />
+        <origin xyz="1.000000 0.000000 0.000000" rpy="-0.000000 0.000000 -0.000000" />
+        <axis xyz="0 0 1" />
+        <limit lower="-2.967" upper="2.967" effort="176" velocity="1.7104" />
+    </joint>
+    
+</robot>
+
+
+
