@@ -26,3 +26,12 @@ A: Install eigen using homebrew. Run
 ```
 brew install eigen
 ```
+
+### Q: How do I pull the latest code?
+A: 
+1. From the terminal, first navigate to the project folder: short_project/
+2. Then, do
+```
+git commit -am "Save changes"
+git pull --rebase
+```
