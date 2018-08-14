@@ -39,7 +39,7 @@ popd && popd &&
 
 # install project code
 if [ ! -d "short_project" ]; then
-	git clone git@github.com:manips-sai-org/short_project.git
+	git clone git@github.com:shameekganguly/short_project.git
 fi
 pushd short_project &&
 sh build.sh
