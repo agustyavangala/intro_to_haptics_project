@@ -26,6 +26,12 @@ const string robot_name = "RRBot";
 const string camera_name = "camera_top";
 const string ee_link_name = "link1";
 
+/*  ----- TASK1 PARAMETERS ----- */
+double ROBOT_JOINT1_POSITION_DEG = 0.0;
+double ROBOT_JOINT2_POSITION_DEG = 90.0;
+
+/* ----------------------------- */
+
 // simulation loop
 bool fSimulationRunning = false;
 void simulation(Model::ModelInterface* robot);
@@ -49,8 +55,8 @@ int main (int argc, char** argv) {
 	auto robot = new Model::ModelInterface(robot_fname, Model::rbdl, Model::urdf, false);
 
 	// set initial condition
-	robot->_q << 0.0/180.0*M_PI,
-				90.0/180.0*M_PI;
+	robot->_q << ROBOT_JOINT1_POSITION_DEG/180.0*M_PI,
+				ROBOT_JOINT2_POSITION_DEG/180.0*M_PI;
 	robot->updateModel();
 	// Eigen::Affine3d ee_trans;
 	// robot->transform(ee_trans, ee_link_name);
