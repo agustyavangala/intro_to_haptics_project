@@ -31,6 +31,8 @@ bool f_x_minus = false;
 bool f_x_plus = false;
 bool f_y_minus = false;
 bool f_y_plus = false;
+bool f_xy_stop = false;
+
 /* ----------------------------- */
 
 // simulation loop
@@ -137,6 +139,11 @@ void simulation(Model::ModelInterface* robot) {
 		robot->updateModel();
 
 		// handle keyboard keys
+		if (f_xy_stop) {
+			vxe = 0.0;
+			vye = 0.0;
+			f_xy_stop = false;
+		}
 		if (f_x_minus) {
 			vxe -= 0.01;
 			f_x_minus = false;
@@ -238,5 +245,9 @@ void keySelect(GLFWwindow* window, int key, int scancode, int action, int mods) 
     // right
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
     	f_y_plus = true;
+    }
+    // space
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+    	f_xy_stop = true;
     }
 }
