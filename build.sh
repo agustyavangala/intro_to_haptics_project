@@ -7,4 +7,4 @@ popd &&
 
 # run
 cd bin &&
-./task1
+./task2
