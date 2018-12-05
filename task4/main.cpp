@@ -100,6 +100,20 @@ int main (int argc, char** argv) {
     	graphics->_world->addChild(haptic_force_line);
     }
 
+    // set a line to visualize the applied force
+    auto font = chai3d::NEW_CFONTCALIBRI40();
+    auto haptic_force_label = new chai3d::cLabel(font);
+    auto camera = graphics->getCamera(camera_name);
+    camera->m_frontLayer->addChild(haptic_force_label);
+    haptic_force_label->setText(
+    	"Haptic force: " +
+    	to_string(F_haptic[0]) +
+    	", " +
+    	to_string(F_haptic[1]) +
+    	", " +
+    	to_string(F_haptic[2])
+	);
+
 	thread haptics_thread(haptic, hapticDevice);
 
     // while window is open:
@@ -112,6 +126,16 @@ int main (int argc, char** argv) {
 		haptic_force_line->m_pointB = chai3d::cVector3d(robot_eff_pos + 0.1*F_haptic);
 		haptic_force_line->m_pointB.z(0.0);
 		haptic_force_line->setShowEnabled(true);
+
+		// update haptic force label
+		haptic_force_label->setText(
+	    	"Haptic force: " +
+	    	to_string(F_haptic[0]) +
+	    	", " +
+	    	to_string(F_haptic[1]) +
+	    	", " +
+	    	to_string(F_haptic[2])
+		);
 
 
 		// update graphics. this automatically waits for the correct amount of time
