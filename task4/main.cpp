@@ -211,7 +211,7 @@ void simulation(Model::ModelInterface* robot) {
 		fyh = 0.0;
 
 		// ------------------------------------
-		F_haptic << fxh, fyh;
+		F_haptic << fxh, fyh, 0.0;
 
 		// ------------------------------------
 
