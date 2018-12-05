@@ -21,8 +21,8 @@ Date: 11/26/18
 using namespace std;
 using namespace chai3d;
 
-const string world_fname = "resources/task1/world.urdf";
-const string robot_fname = "resources/task1/RR.urdf";
+const string world_fname = "resources/task3/world.urdf";
+const string robot_fname = "resources/task3/RR.urdf";
 const string robot_name = "RRBot";
 const string camera_name = "camera_top";
 const string ee_link_name = "link1";
