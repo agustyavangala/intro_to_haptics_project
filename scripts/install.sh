@@ -60,6 +60,7 @@ if [ ! -d "sai2-common" ]; then
 	git clone git@github.com:manips-sai-org/sai2-common.git  || exit 1
 fi
 pushd sai2-common &&
+git checkout f1c63fb0e3a0382c46c1ebd04e5078a76090689f &&
 mkdir -p build &&
 pushd build &&
 cmake .. -DCMAKE_BUILD_TYPE=Release && make &&
