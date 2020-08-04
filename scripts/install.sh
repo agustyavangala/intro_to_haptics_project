@@ -56,7 +56,7 @@ cp sai2-simulation.zip stanford_project/ &&
 pushd stanford_project &&
 
 # install sai2-simulation
-if [ ! -d "sai2-simulation" ]; then
+if [ ! -d "sai2-simulation-master" ]; then
 	unzip sai2-simulation.zip  || exit 1
 fi
 pushd sai2-simulation-master &&
