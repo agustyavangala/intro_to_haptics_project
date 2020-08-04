@@ -10,9 +10,8 @@ Date: 12/3/18
 #include <thread>
 #include <math.h>
 
-#include "model/ModelInterface.h"
-#include "graphics/GraphicsInterface.h"
-#include "graphics/ChaiGraphics.h"
+#include "Sai2Model.h"
+#include "Sai2Graphics.h"
 #include "chai3d.h"
 
 #include "timer/LoopTimer.h"
@@ -36,7 +35,7 @@ Eigen::Vector3d F_haptic = Eigen::Vector3d::Zero();
 
 // simulation loop
 bool fSimulationRunning = false;
-void simulation(Model::ModelInterface* robot);
+void simulation(Sai2Model::Sai2Model* robot);
 void haptic(cGenericHapticDevicePtr device);
 
 // initialize window manager
@@ -52,11 +51,10 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics_ext = new Graphics::GraphicsInterface(world_fname, Graphics::chai, Graphics::urdf, false);
-	Graphics::ChaiGraphics* graphics = dynamic_cast<Graphics::ChaiGraphics*> (graphics_ext->_graphics_internal);
+	auto graphics = new Sai2Graphics::Sai2Graphics(world_fname, false);
 
 	// load robots
-	auto robot = new Model::ModelInterface(robot_fname, Model::rbdl, Model::urdf, false);
+	auto robot = new Sai2Model::Sai2Model(robot_fname, false);
 
 	// set initial condition
 	robot->_q << 0.0/180.0*M_PI,
@@ -165,7 +163,7 @@ int main (int argc, char** argv) {
 }
 
 //------------------------------------------------------------------------------
-void simulation(Model::ModelInterface* robot) {
+void simulation(Sai2Model::Sai2Model* robot) {
 	fSimulationRunning = true;
 
 	// create a timer

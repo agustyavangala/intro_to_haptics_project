@@ -31,21 +31,42 @@ find_package(SAI2-SIMULATION REQUIRED)
 include_directories(${SAI2-SIMULATION_INCLUDE_DIRS})
 add_definitions(${SAI2-SIMULATION_DEFINITIONS})
 
-# - SAI2-COMMON
-find_package(SAI2-COMMON REQUIRED)
-include_directories(${SAI2-COMMON_INCLUDE_DIRS})
-add_definitions(${SAI2-COMMON_DEFINITIONS})
+# - SAI2-URDF. TODO: this should not be needed. something fishy.
+find_package(SAI2-URDF REQUIRED)
+include_directories(${SAI2-URDF_INCLUDE_DIRS})
+add_definitions(${SAI2-URDF_DEFINITIONS})
+
+# - SAI2-MODEL. TODO: this should not be needed. something fishy.
+find_package(SAI2-MODEL REQUIRED)
+include_directories(${SAI2-MODEL_INCLUDE_DIRS})
+add_definitions(${SAI2-MODEL_DEFINITIONS})
+
+# - SAI2-GRAPHICS. TODO: this should not be needed. something fishy.
+find_package(SAI2-GRAPHICS REQUIRED)
+include_directories(${SAI2-GRAPHICS_INCLUDE_DIRS})
+add_definitions(${SAI2-GRAPHICS_DEFINITIONS})
+
+# # - SAI2-COMMON
+# find_package(SAI2-COMMON REQUIRED)
+# include_directories(${SAI2-COMMON_INCLUDE_DIRS})
+# add_definitions(${SAI2-COMMON_DEFINITIONS})
 
 # - glfw3
 find_package(glfw3 QUIET)
 find_library(GLFW_LIBRARY glfw)
 
+# - rbdl
+find_package(RBDL QUIET)
+include_directories(${RBDL_INCLUDE_DIR})
+
 set(COMMON_LIBRARIES
-	${CHAI3D_LIBARIES}
-	${SAI2-COMMON_LIBRARIES}
-	${HIREDIS_LIBRARY}
+	${CHAI3D_LIBRARIES}
+    ${SAI2-URDF_LIBRARIES}
+    ${SAI2-SIMULATION_LIBRARIES}
+    ${SAI2-MODEL_LIBRARIES}
+    ${SAI2-GRAPHICS_LIBRARIES}
 	${GLFW_LIBRARY}
-	)
+)
 
 # add apps
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY                ${PROJECT_SOURCE_DIR}/bin)

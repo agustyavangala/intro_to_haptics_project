@@ -1,7 +1,7 @@
 # short_project
-Short project for Hanson and Mingyang
+Short project demonstrating kinematics and haptics
 
-## FAQs
+## FAQs (OSX)
 
 ### Q: Error: git command not found
 A: You have to install xcodetools. From terminal, run
@@ -25,6 +25,13 @@ A: Install eigen using homebrew. Run
 
 ```
 brew install eigen
+```
+
+### Q: Error: TinyXml2 not found
+A: Install tinyxml2 using homebrew. Run
+
+```
+brew install tinyxml2
 ```
 
 ### Q: How do I pull the latest code?

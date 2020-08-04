@@ -11,8 +11,8 @@ Date: 8/7/18
 #include <thread>
 #include <math.h>
 
-#include "model/ModelInterface.h"
-#include "graphics/GraphicsInterface.h"
+#include "Sai2Model.h"
+#include "Sai2Graphics.h"
 
 #include "timer/LoopTimer.h"
 
@@ -37,7 +37,7 @@ bool f_xy_stop = false;
 
 // simulation loop
 bool fSimulationRunning = false;
-void simulation(Model::ModelInterface* robot);
+void simulation(Sai2Model::Sai2Model* robot);
 
 // initialize window manager
 GLFWwindow* glfwInitialize();
@@ -52,10 +52,10 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = new Graphics::GraphicsInterface(world_fname, Graphics::chai, Graphics::urdf, false);
+	auto graphics = new Sai2Graphics::Sai2Graphics(world_fname, false);
 
 	// load robots
-	auto robot = new Model::ModelInterface(robot_fname, Model::rbdl, Model::urdf, false);
+	auto robot = new Sai2Model::Sai2Model(robot_fname, false);
 
 	// set initial condition
 	robot->_q << 0.0/180.0*M_PI,
@@ -106,7 +106,7 @@ int main (int argc, char** argv) {
 }
 
 //------------------------------------------------------------------------------
-void simulation(Model::ModelInterface* robot) {
+void simulation(Sai2Model::Sai2Model* robot) {
 	fSimulationRunning = true;
 
 	// create a timer
