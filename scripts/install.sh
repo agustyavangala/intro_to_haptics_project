@@ -49,7 +49,7 @@ fi
 pushd rbdl-rbdl-0879ee8c548a &&
 mkdir -p build &&
 pushd build &&
-cmake .. -DCMAKE_BUILD_TYPE=Release -DRBDL_BUILD_ADDON_URDFREADER=ON -D && make &&
+cmake .. -DCMAKE_BUILD_TYPE=Release -DRBDL_BUILD_ADDON_URDFREADER=ON && make &&
 echo "Please enter computer password: " &&
 sudo make install &&
 popd && popd &&
