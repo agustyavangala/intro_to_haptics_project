@@ -80,22 +80,26 @@
 		<position xyz="4.0 0.0 3.0" />
 		<lookat xyz="0.0 0.0 1.0" />
 	</light> -->
-	<camera name="camera_front">
+	<camera name="camera_2">
+	<!-- <camera name="camera_front"> -->
 		<position xyz="4.0 0.0 2.0" />
 		<vertical xyz="0.0 0.0 1.0" />
 		<lookat xyz="0.0 0.0 1.0" />
 	</camera>
-	<camera name="camera_top">
+	<camera name="camera_1">
+	<!-- <camera name="camera_top"> -->
 		<position xyz="1.2 1.2 4.0" />
 		<vertical xyz="-1.0 0.0 0.0" />
 		<lookat xyz="1.2 1.2 0.0" />
 	</camera>
-	<camera name="camera_side">
+	<camera name="camera_3">
+	<!-- <camera name="camera_side"> -->
 		<position xyz="0.0 -3.0 2.0" />
 		<vertical xyz="0.0 0.0 1.0" />
 		<lookat xyz="0.0 0.0 0.5" />
 	</camera>
-	<camera name="camera_isometric">
+	<camera name="camera_4">
+	<!-- <camera name="camera_isometric"> -->
 		<position xyz="2.5 -2.5 3.0" />
 		<vertical xyz="0.0 0.0 1.0" />
 		<lookat xyz="0.0 0.0 0.0" />

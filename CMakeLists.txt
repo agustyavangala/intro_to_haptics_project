@@ -2,6 +2,9 @@
 cmake_minimum_required (VERSION 2.8.12)
 project (SHORT_PROJECT)
 SET(CMAKE_CXX_FLAGS "-std=c++11 -I/usr/include -I/usr/local/include")
+if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/include")
+endif()
 
 # set common source
 set (COMMON_SOURCE
@@ -12,8 +15,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # # set common dependencies
 # # - eigen3 # must be loaded before chai to avoid a conflict between the system Eigen and the Chai eigen.
-# find_package(Eigen3 REQUIRED)
-# include_directories(${EIGEN3_INCLUDE_DIR})
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 # - CHAI3D
 find_package(CHAI3D REQUIRED)
@@ -46,10 +49,19 @@ find_package(SAI2-GRAPHICS REQUIRED)
 include_directories(${SAI2-GRAPHICS_INCLUDE_DIRS})
 add_definitions(${SAI2-GRAPHICS_DEFINITIONS})
 
-# # - SAI2-COMMON
-# find_package(SAI2-COMMON REQUIRED)
-# include_directories(${SAI2-COMMON_INCLUDE_DIRS})
-# add_definitions(${SAI2-COMMON_DEFINITIONS})
+# - SAI2-COMMON
+find_package(SAI2-COMMON REQUIRED)
+include_directories(${SAI2-COMMON_INCLUDE_DIRS})
+add_definitions(${SAI2-COMMON_DEFINITIONS})
+
+# SAI2-PRIMITIVES
+find_package(SAI2-PRIMITIVES REQUIRED)
+include_directories(${SAI2-PRIMITIVES_INCLUDE_DIRS})
+add_definitions(${SAI2-PRIMITIVES_DEFINITIONS})
+
+# SAI2-INTERFACES
+find_package(SAI2-INTERFACES REQUIRED)
+include_directories(${SAI2-INTERFACES_INCLUDE_DIRS})
 
 # - glfw3
 find_package(glfw3 QUIET)
@@ -60,12 +72,13 @@ find_package(RBDL QUIET)
 include_directories(${RBDL_INCLUDE_DIR})
 
 set(COMMON_LIBRARIES
-	${CHAI3D_LIBRARIES}
+    ${CHAI3D_LIBRARIES}
     ${SAI2-URDF_LIBRARIES}
     ${SAI2-SIMULATION_LIBRARIES}
     ${SAI2-MODEL_LIBRARIES}
     ${SAI2-GRAPHICS_LIBRARIES}
-	${GLFW_LIBRARY}
+    ${SAI2-INTERFACES_LIBRARIES}
+    ${GLFW_LIBRARY}
 )
 
 # add apps
@@ -81,4 +94,4 @@ FILE(MAKE_DIRECTORY ${RESOURCE_DIR})
 add_subdirectory(task1)
 add_subdirectory(task2)
 add_subdirectory(task3)
-add_subdirectory(task4)
+#add_subdirectory(task4)

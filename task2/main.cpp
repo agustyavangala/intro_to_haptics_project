@@ -18,7 +18,14 @@ Date: 8/7/18
 
 #include <GLFW/glfw3.h> //must be loaded after loading opengl/glew as part of graphicsinterface
 
+// for handling ctrl+c and interruptions properly
+#include <signal.h>
+bool fSimulationRunning = false;
+void sighandler(int) { fSimulationRunning = false; }
+
+// namespaces for compactness of code
 using namespace std;
+using namespace Eigen;
 
 const string world_fname = "resources/task1/world.urdf";
 const string robot_fname = "resources/task1/RR.urdf";
@@ -36,8 +43,7 @@ bool f_xy_stop = false;
 /* ----------------------------- */
 
 // simulation loop
-bool fSimulationRunning = false;
-void simulation(Sai2Model::Sai2Model* robot);
+void simulation(shared_ptr<Sai2Model::Sai2Model> robot);
 
 // initialize window manager
 GLFWwindow* glfwInitialize();
@@ -52,15 +58,17 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = new Sai2Graphics::Sai2Graphics(world_fname, false);
+	auto graphics = make_shared<Sai2Graphics::Sai2Graphics>(world_fname);
+	graphics->addUIForceInteraction(robot_name);
 
 	// load robots
-	auto robot = new Sai2Model::Sai2Model(robot_fname, false);
+	auto robot = make_shared<Sai2Model::Sai2Model>(robot_fname, false);
 
 	// set initial condition
-	robot->_q << 0.0/180.0*M_PI,
+	Eigen::Vector2d initial_q;
+	initial_q << 0.0/180.0*M_PI,
 				90.0/180.0*M_PI;
-	robot->updateModel();
+	robot->setQ(initial_q);
 	// Eigen::Affine3d ee_trans;
 	// robot->transform(ee_trans, ee_link_name);
 	// cout << ee_trans.translation().transpose() << endl;
@@ -75,20 +83,14 @@ int main (int argc, char** argv) {
 	// start the simulation
 	thread sim_thread(simulation, robot);
 	
-    // while window is open:
-    while (!glfwWindowShouldClose(window)) {
-		// update kinematic models
-		// robot->updateModel();
-
-		// update graphics. this automatically waits for the correct amount of time
-		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
-		graphics->updateGraphics(robot_name, robot);
-		graphics->render(camera_name, width, height);
-		glfwSwapBuffers(window);
-		glFinish();
-
+	// while window is open:
+	// while (graphics->isWindowOpen()) {
+	while (!glfwWindowShouldClose(window)) {
+		graphics->updateRobotGraphics(robot_name, robot->q());
+		graphics->renderGraphicsWorld();
+		
 	    // poll for events
+		glfwSwapBuffers(window);
 	    glfwPollEvents();
 	}
 
@@ -96,17 +98,12 @@ int main (int argc, char** argv) {
 	fSimulationRunning = false;
 	sim_thread.join();
 
-    // destroy context
-    glfwDestroyWindow(window);
-
-    // terminate
-    glfwTerminate();
-
 	return 0;
 }
 
 //------------------------------------------------------------------------------
-void simulation(Sai2Model::Sai2Model* robot) {
+void simulation(shared_ptr<Sai2Model::Sai2Model> robot) {
+	
 	fSimulationRunning = true;
 
 	// create a timer
@@ -122,6 +119,10 @@ void simulation(Sai2Model::Sai2Model* robot) {
 	double dq0 = 0.0;
 	double dq1 = 0.0;
 
+	// TODO: make sure this reads initial q values set in main function
+	Eigen::VectorXd robot_q = robot->q();
+	Eigen::VectorXd robot_dq = robot->dq();
+
 	bool fTimerDidSleep = true;
 	while (fSimulationRunning) {
 		fTimerDidSleep = timer.waitForNextLoop();
@@ -129,7 +130,8 @@ void simulation(Sai2Model::Sai2Model* robot) {
 		// integrate joint velocity to joint positions
 		double curr_time = timer.elapsedTime();
 		double loop_dt = curr_time - last_time; 
-		robot->_q += robot->_dq*loop_dt;
+		robot_q += robot->dq() * loop_dt;
+		robot->setQ(robot_q);
 
 		// if (!fTimerDidSleep) {
 		// 	cout << "Warning: timer underflow! dt: " << loop_dt << "\n";
@@ -162,8 +164,8 @@ void simulation(Sai2Model::Sai2Model* robot) {
 		}
 		
 		// get q0, q1
-		q0 = robot->_q[0]; // in radians
-		q1 = robot->_q[1]; // in radians
+		q0 = robot->q()(0); // in radians
+		q1 = robot->q()(1); // in radians
 
 		// ------------------------------------
 		// FILL ME IN: set new joint velocities given vxe, vye, q0 and q1
@@ -173,7 +175,8 @@ void simulation(Sai2Model::Sai2Model* robot) {
 
 		// ------------------------------------
 
-		robot->_dq << dq0, dq1;
+		robot_dq << dq0, dq1;
+		robot->setDq(robot_dq);
 		
 		// ------------------------------------
 
@@ -251,3 +254,4 @@ void keySelect(GLFWwindow* window, int key, int scancode, int action, int mods) 
     	f_xy_stop = true;
     }
 }
+
