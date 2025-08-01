@@ -11,8 +11,8 @@ Date: 8/7/18
 #include <thread>
 #include <math.h>
 
-#include "Sai2Model.h"
-#include "Sai2Graphics.h"
+#include "SaiModel.h"
+#include "SaiGraphics.h"
 
 #include "timer/LoopTimer.h"
 
@@ -40,17 +40,17 @@ double ROBOT_JOINT2_POSITION_DEG = 90.0;
 /* ----------------------------- */
 
 // simulation loop
-void simulation(shared_ptr<Sai2Model::Sai2Model> robot);
+void simulation(shared_ptr<SaiModel::SaiModel> robot);
 
 int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = make_shared<Sai2Graphics::Sai2Graphics>(world_fname);
+	auto graphics = make_shared<SaiGraphics::SaiGraphics>(world_fname);
 	graphics->addUIForceInteraction(robot_name);
 
 	// load robots
-	auto robot = make_shared<Sai2Model::Sai2Model>(robot_fname, false);
+	auto robot = make_shared<SaiModel::SaiModel>(robot_fname, false);
 
 	// set initial condition
 	Eigen::Vector2d initial_q;
@@ -81,7 +81,7 @@ int main (int argc, char** argv) {
 }
 
 //------------------------------------------------------------------------------
-void simulation(shared_ptr<Sai2Model::Sai2Model> robot) {
+void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 
 	fSimulationRunning = true;
 

@@ -10,8 +10,8 @@ Date: 12/3/18
 #include <thread>
 #include <math.h>
 
-#include "Sai2Model.h"
-#include "Sai2Graphics.h"
+#include "SaiModel.h"
+#include "SaiGraphics.h"
 #include "chai3d.h"
 
 #include "timer/LoopTimer.h"
@@ -35,7 +35,7 @@ Eigen::Vector3d F_haptic = Eigen::Vector3d::Zero();
 
 // simulation loop
 bool fSimulationRunning = false;
-void simulation(Sai2Model::Sai2Model* robot);
+void simulation(SaiModel::SaiModel* robot);
 void haptic(cGenericHapticDevicePtr device);
 
 // initialize window manager
@@ -51,10 +51,10 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = new Sai2Graphics::Sai2Graphics(world_fname, false);
+	auto graphics = new SaiGraphics::SaiGraphics(world_fname, false);
 
 	// load robots
-	auto robot = new Sai2Model::Sai2Model(robot_fname, false);
+	auto robot = new SaiModel::SaiModel(robot_fname, false);
 
 	// set initial condition
 	robot->_q << 0.0/180.0*M_PI,
@@ -163,7 +163,7 @@ int main (int argc, char** argv) {
 }
 
 //------------------------------------------------------------------------------
-void simulation(Sai2Model::Sai2Model* robot) {
+void simulation(SaiModel::SaiModel* robot) {
 	fSimulationRunning = true;
 
 	// create a timer
@@ -280,7 +280,7 @@ GLFWwindow* glfwInitialize() {
 
     // create window and make it current
     glfwWindowHint(GLFW_VISIBLE, 0);
-    GLFWwindow* window = glfwCreateWindow(windowW, windowH, "SAI2.0 - Task 4", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowW, windowH, "Sai.0 - Task 4", NULL, NULL);
 	glfwSetWindowPos(window, windowPosX, windowPosY);
 	glfwShowWindow(window);
     glfwMakeContextCurrent(window);

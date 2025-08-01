@@ -11,8 +11,8 @@ Date: 8/7/18
 #include <thread>
 #include <math.h>
 
-#include "Sai2Model.h"
-#include "Sai2Graphics.h"
+#include "SaiModel.h"
+#include "SaiGraphics.h"
 
 #include "timer/LoopTimer.h"
 
@@ -43,7 +43,7 @@ bool f_xy_stop = false;
 /* ----------------------------- */
 
 // simulation loop
-void simulation(shared_ptr<Sai2Model::Sai2Model> robot);
+void simulation(shared_ptr<SaiModel::SaiModel> robot);
 
 // initialize window manager
 GLFWwindow* glfwInitialize();
@@ -58,11 +58,11 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = make_shared<Sai2Graphics::Sai2Graphics>(world_fname);
+	auto graphics = make_shared<SaiGraphics::SaiGraphics>(world_fname);
 	graphics->addUIForceInteraction(robot_name);
 
 	// load robots
-	auto robot = make_shared<Sai2Model::Sai2Model>(robot_fname, false);
+	auto robot = make_shared<SaiModel::SaiModel>(robot_fname, false);
 
 	// set initial condition
 	Eigen::Vector2d initial_q;
@@ -102,7 +102,7 @@ int main (int argc, char** argv) {
 }
 
 //------------------------------------------------------------------------------
-void simulation(shared_ptr<Sai2Model::Sai2Model> robot) {
+void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 	
 	fSimulationRunning = true;
 
@@ -208,7 +208,7 @@ GLFWwindow* glfwInitialize() {
 
     // create window and make it current
     glfwWindowHint(GLFW_VISIBLE, 0);
-    GLFWwindow* window = glfwCreateWindow(windowW, windowH, "SAI2.0 - Task 2", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowW, windowH, "Sai.0 - Task 2", NULL, NULL);
 	glfwSetWindowPos(window, windowPosX, windowPosY);
 	glfwShowWindow(window);
     glfwMakeContextCurrent(window);

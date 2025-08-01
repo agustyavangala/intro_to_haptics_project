@@ -29,39 +29,39 @@ elseif (CMAKE_SYSTEM_NAME MATCHES Linux)
 endif () #NOTE: Windows is currently unsupported
 link_directories(${CHAI3D_LIBRARY_DIRS})
 
-# - SAI2-SIMULATION. TODO: this should not be needed. something fishy.
-find_package(SAI2-SIMULATION REQUIRED)
-include_directories(${SAI2-SIMULATION_INCLUDE_DIRS})
-add_definitions(${SAI2-SIMULATION_DEFINITIONS})
+# - SAI-SIMULATION. TODO: this should not be needed. something fishy.
+find_package(SAI-SIMULATION REQUIRED)
+include_directories(${SAI-SIMULATION_INCLUDE_DIRS})
+add_definitions(${SAI-SIMULATION_DEFINITIONS})
 
-# - SAI2-URDF. TODO: this should not be needed. something fishy.
-find_package(SAI2-URDF REQUIRED)
-include_directories(${SAI2-URDF_INCLUDE_DIRS})
-add_definitions(${SAI2-URDF_DEFINITIONS})
+# - SAI-URDF. TODO: this should not be needed. something fishy.
+find_package(SAI-URDF REQUIRED)
+include_directories(${SAI-URDF_INCLUDE_DIRS})
+add_definitions(${SAI-URDF_DEFINITIONS})
 
-# - SAI2-MODEL. TODO: this should not be needed. something fishy.
-find_package(SAI2-MODEL REQUIRED)
-include_directories(${SAI2-MODEL_INCLUDE_DIRS})
-add_definitions(${SAI2-MODEL_DEFINITIONS})
+# - SAI-MODEL. TODO: this should not be needed. something fishy.
+find_package(SAI-MODEL REQUIRED)
+include_directories(${SAI-MODEL_INCLUDE_DIRS})
+add_definitions(${SAI-MODEL_DEFINITIONS})
 
-# - SAI2-GRAPHICS. TODO: this should not be needed. something fishy.
-find_package(SAI2-GRAPHICS REQUIRED)
-include_directories(${SAI2-GRAPHICS_INCLUDE_DIRS})
-add_definitions(${SAI2-GRAPHICS_DEFINITIONS})
+# - SAI-GRAPHICS. TODO: this should not be needed. something fishy.
+find_package(SAI-GRAPHICS REQUIRED)
+include_directories(${SAI-GRAPHICS_INCLUDE_DIRS})
+add_definitions(${SAI-GRAPHICS_DEFINITIONS})
 
-# - SAI2-COMMON
-find_package(SAI2-COMMON REQUIRED)
-include_directories(${SAI2-COMMON_INCLUDE_DIRS})
-add_definitions(${SAI2-COMMON_DEFINITIONS})
+# - SAI-COMMON
+find_package(SAI-COMMON REQUIRED)
+include_directories(${SAI-COMMON_INCLUDE_DIRS})
+add_definitions(${SAI-COMMON_DEFINITIONS})
 
-# SAI2-PRIMITIVES
-find_package(SAI2-PRIMITIVES REQUIRED)
-include_directories(${SAI2-PRIMITIVES_INCLUDE_DIRS})
-add_definitions(${SAI2-PRIMITIVES_DEFINITIONS})
+# SAI-PRIMITIVES
+find_package(SAI-PRIMITIVES REQUIRED)
+include_directories(${SAI-PRIMITIVES_INCLUDE_DIRS})
+add_definitions(${SAI-PRIMITIVES_DEFINITIONS})
 
-# SAI2-INTERFACES
-find_package(SAI2-INTERFACES REQUIRED)
-include_directories(${SAI2-INTERFACES_INCLUDE_DIRS})
+# SAI-INTERFACES
+find_package(SAI-INTERFACES REQUIRED)
+include_directories(${SAI-INTERFACES_INCLUDE_DIRS})
 
 # - glfw3
 find_package(glfw3 QUIET)
@@ -72,12 +72,14 @@ find_package(RBDL QUIET)
 include_directories(${RBDL_INCLUDE_DIR})
 
 set(COMMON_LIBRARIES
+    ${SAI-GRAPHICS_LIBRARIES}
+    ${SAI-URDF_LIBRARIES}
     ${CHAI3D_LIBRARIES}
-    ${SAI2-URDF_LIBRARIES}
-    ${SAI2-SIMULATION_LIBRARIES}
-    ${SAI2-MODEL_LIBRARIES}
-    ${SAI2-GRAPHICS_LIBRARIES}
-    ${SAI2-INTERFACES_LIBRARIES}
+    ${SAI-INTERFACES_LIBRARIES}
+    ${SAI-PRIMITIVES_LIBRARIES}
+    ${SAI-MODEL_LIBRARIES}
+    ${SAI-SIMULATION_LIBRARIES}
+    ${SAI-COMMON_LIBRARIES}
     ${GLFW_LIBRARY}
 )
 

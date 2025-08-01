@@ -10,8 +10,8 @@ Date: 11/26/18
 #include <thread>
 #include <math.h>
 
-#include "Sai2Model.h"
-#include "Sai2Graphics.h"
+#include "SaiModel.h"
+#include "SaiGraphics.h"
 #include "chai3d.h"
 
 #include "timer/LoopTimer.h"
@@ -41,7 +41,7 @@ Eigen::Vector3d haptic_device_velocity = Eigen::Vector3d::Zero();
 /* ----------------------------- */
 
 // simulation loop
-void simulation(shared_ptr<Sai2Model::Sai2Model> robot);
+void simulation(shared_ptr<SaiModel::SaiModel> robot);
 void haptic(cGenericHapticDevicePtr device);
 
 // initialize window manager
@@ -57,11 +57,11 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = make_shared<Sai2Graphics::Sai2Graphics>(world_fname);
+	auto graphics = make_shared<SaiGraphics::SaiGraphics>(world_fname);
 	graphics->addUIForceInteraction(robot_name);
 
 	// load robots
-	auto robot = make_shared<Sai2Model::Sai2Model>(robot_fname, false);
+	auto robot = make_shared<SaiModel::SaiModel>(robot_fname, false);
 
 	// set initial condition
 	Eigen::Vector2d initial_q;
@@ -109,7 +109,7 @@ int main (int argc, char** argv) {
 }
 
 //------------------------------------------------------------------------------
-void simulation(shared_ptr<Sai2Model::Sai2Model> robot) {
+void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 	fSimulationRunning = true;
 
 	// create a timer
