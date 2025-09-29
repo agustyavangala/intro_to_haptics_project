@@ -1,5 +1,5 @@
-/*  task3
-This file includes the required code to implement task3: move planar mechanism with haptic device.
+/*  task5/main.cpp
+This file includes the required code to implement task5: move planar mechanism with haptic device.
 
 Author: Shameek Ganguly shameekg@stanford.edu
 Date: 11/26/18
@@ -37,6 +37,9 @@ const string ee_link_name = "link1";
 /*  ----- TASK3 Variables ----- */
 bool fHapticDeviceEnabled = false;
 Eigen::Vector3d haptic_device_velocity = Eigen::Vector3d::Zero();
+/*  ----- TASK4 Variables ----- */
+Eigen::Vector3d F_haptic = Eigen::Vector3d::Zero();
+/* ----------------------------- */
 
 /* ----------------------------- */
 
@@ -166,8 +169,20 @@ void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 		// Dq1 = - ((cos q0 + cos(q0+q1))vxe + (sin(q0)+sin(q0+q1))vye)/sin(q1)
 		// FILL ME IN: set new joint velocities given vxe, vye, q0 and q1
 		// NOTE: These should be entered in radians/second. Not in degrees/second.
-		dq0 = ((cos(q0 + q1) * vxe )+ (sin(q0 + q1) * vye)) / sin(q1);
-		dq1 = -((cos(q0) + cos(q0 + q1)) * vxe + (sin(q0) + sin(q0 + q1)) * vye) / sin(q1);		
+		const double epsilon = 1e-6;
+		double sin_q1 = sin(q1);
+		double epsilon_sinq1 = 1e-6; // small value to prevent division by zero
+		if (fabs(sin_q1) < epsilon_sinq1) {
+			sin_q1 = (sin_q1 >= 0) ? epsilon_sinq1 : -epsilon_sinq1;
+		}
+		dq1 = -((cos(q0) + cos(q0 + q1)) * vxe + (sin(q0) + sin(q0 + q1)) * vye) / sin_q1;
+		if (fabs(sin_q1) < epsilon) {
+			dq0 = 0.0;
+			dq1 = 0.0;
+		} else {
+			dq0 = ((cos(q0 + q1) * vxe )+ (sin(q0 + q1) * vye)) / sin_q1;
+			dq1 = -((cos(q0) + cos(q0 + q1)) * vxe + (sin(q0) + sin(q0 + q1)) * vye) / sin_q1;
+		}
 		// ------------------------------------
 		// FILL ME IN: set new joint velocities given vxe, vye, q0 and q1
 		// NOTE: These should be entered in radians/second. Not in degrees/second.
@@ -180,6 +195,53 @@ void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 		
 		// ------------------------------------
 
+		//  Fhaptic = -p/||p|| * 1/(R- ||p||)^k c^k0 +c1------------------------------------
+        // FILL ME IN: set force on haptic device, fx and fy
+        //p = [xe, ye, 0] is the 3D position of the robot’s hand
+        //||p|| = the distance of the hand from the origin given by square-root of (xe*xe + ye*ye)
+        //R = 2 is the radius of the robot’s workspace in distance units.
+        //k is an exponent parameter that determines how the force increases as the robot’s hand gets closer to the workspace boundary (Hint: you can try different values  between 1 and 10)
+        //c0 and c1 are positive valued parameters that control the scaling of the force. If c0 is too large, the force will decrease quickly as you move the robot’s hand away from the workspace boundary. If c1 is too large, the maximum strength of the force felt (when the robot’s hand is at the workspace boundary) is reduced. (Hint: try values for c0 between 1.0 to 10.0, try values for c1 between 0.01 to 1.0)
+
+		double xe, ye;
+		double fxh = 0.0;
+		double fyh = 0.0;
+		double fxh1 = 0.0;
+		double fyh1 = 0.0;
+		//Xe = f(q0,q1) = cos(q0) + cos(q0+q1)
+		//Ye = g(q0,q1) = sin(q0) + sin(q0+q1) 
+		xe = cos(q0) + cos(q0+q1);
+		ye = sin(q0) + sin(q0+q1);
+		xe = cos(q0) + cos(q0+q1);
+		double p_norm = sqrt(xe*xe + ye*ye);
+		double R = 2.0;
+		double k = 3.0;
+		double c0 = 0.5;
+		double c1 = 0.5;
+		double epsilon = 1e-6; // small value to prevent division by zero
+		if (p_norm < R) {
+			double denom = std::max(R - p_norm, epsilon);
+			fxh = - (xe/p_norm) * (1.0/pow(denom, k)) * pow(c0, k) + c1;
+			fyh = - (ye/p_norm) * (1.0/pow(denom, k)) * pow(c0, k) + c1;
+		} else {
+			//if the robot's hand is outside the workspace, set the force to zero
+			fxh = 0.0;
+			fyh = 0.0;
+		}
+            fyh = 0.0;
+        }
+    
+		// create frictional force
+		// Fhaptic = fc.sin(ve)+fv.ve
+		double fc = 0.1; //friction coefficient
+		double fv = 0.01; //viscous coefficient
+		fxh1 += -fc * sin(vhx) - fv * vhx;
+		fyh1 += -fc * sin(vhy) - fv * vhy;
+
+        // ------------------------------------
+        F_haptic << fxh+fxh1, fyh+fyh1, 0.0;
+
+
 		// update last time
 		last_time = curr_time;
 	}
@@ -191,6 +253,7 @@ void haptic(cGenericHapticDevicePtr device) {
 	while (fHapticDeviceEnabled && fSimulationRunning) {
 		device->getLinearVelocity(device_vel);
 		haptic_device_velocity = device_vel.eigen();
+		device->setForce(F_haptic);
 		//cout << haptic_device_velocity << endl << endl;
 	}
 }

@@ -162,16 +162,17 @@ void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 			vye += 0.01;
 			f_y_plus = false;
 		}
-		
 		// get q0, q1
 		q0 = robot->q()(0); // in radians
 		q1 = robot->q()(1); // in radians
-
+	
 		// ------------------------------------
+		// Dq0 = cos(q0+q1)vxe+sin(q0+q1)vye/ sin(q1)
+		// Dq1 = - ((cos q0 + cos(q0+q1))vxe + (sin(q0)+sin(q0+q1))vye)/sin(q1)
 		// FILL ME IN: set new joint velocities given vxe, vye, q0 and q1
 		// NOTE: These should be entered in radians/second. Not in degrees/second.
-		dq0 = 0.0;
-		dq1 = 0.0;
+		dq0 = ((cos(q0 + q1) * vxe )+ (sin(q0 + q1) * vye)) / sin(q1);
+		dq1 = -((cos(q0) + cos(q0 + q1)) * vxe + (sin(q0) + sin(q0 + q1)) * vye) / sin(q1);
 
 		// ------------------------------------
 
@@ -231,6 +232,7 @@ void keySelect(GLFWwindow* window, int key, int scancode, int action, int mods) 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         // exit application
          glfwSetWindowShouldClose(window, 1);
+		 printf("Exiting application...\n");
     }
 
     // up

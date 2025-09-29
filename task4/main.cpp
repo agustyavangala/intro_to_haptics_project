@@ -1,8 +1,8 @@
 /*  task4
-This file includes the required code to implement task4: constrained teleoperation with haptic device.
+This file includes the required code to implement task4: move planar mechanism with haptic device.
 
 Author: Shameek Ganguly shameekg@stanford.edu
-Date: 12/3/18
+Date: 11/26/18
 */
 
 #include <iostream>
@@ -18,24 +18,33 @@ Date: 12/3/18
 
 #include <GLFW/glfw3.h> //must be loaded after loading opengl/glew as part of graphicsinterface
 
+// for handling ctrl+c and interruptions properly
+#include <signal.h>
+bool fSimulationRunning = false;
+void sighandler(int) { fSimulationRunning = false; }
+
+// namespaces for compactness of code
 using namespace std;
+using namespace Eigen;
 using namespace chai3d;
 
-const string world_fname = "resources/task4/world.urdf";
-const string robot_fname = "resources/task4/RR.urdf";
+const string world_fname = "resources/task3/world.urdf";
+const string robot_fname = "resources/task3/RR.urdf";
 const string robot_name = "RRBot";
 const string camera_name = "camera_top";
 const string ee_link_name = "link1";
 
-/*  ----- TASK4 Variables ----- */
+/*  ----- TASK3 Variables ----- */
 bool fHapticDeviceEnabled = false;
 Eigen::Vector3d haptic_device_velocity = Eigen::Vector3d::Zero();
+/*  ----- TASK4 Variables ----- */
 Eigen::Vector3d F_haptic = Eigen::Vector3d::Zero();
 /* ----------------------------- */
 
+/* ----------------------------- */
+
 // simulation loop
-bool fSimulationRunning = false;
-void simulation(SaiModel::SaiModel* robot);
+void simulation(shared_ptr<SaiModel::SaiModel> robot);
 void haptic(cGenericHapticDevicePtr device);
 
 // initialize window manager
@@ -51,25 +60,21 @@ int main (int argc, char** argv) {
 	cout << "Loading URDF world model file: " << world_fname << endl;
 
 	// load graphics scene
-	auto graphics = new SaiGraphics::SaiGraphics(world_fname, false);
+	auto graphics = make_shared<SaiGraphics::SaiGraphics>(world_fname);
+	graphics->addUIForceInteraction(robot_name);
 
 	// load robots
-	auto robot = new SaiModel::SaiModel(robot_fname, false);
+	auto robot = make_shared<SaiModel::SaiModel>(robot_fname, false);
 
 	// set initial condition
-	robot->_q << 0.0/180.0*M_PI,
+	Eigen::Vector2d initial_q;
+	initial_q << 0.0/180.0*M_PI,
 				90.0/180.0*M_PI;
-	robot->updateModel();
+	robot->setQ(initial_q);
 	// Eigen::Affine3d ee_trans;
 	// robot->transform(ee_trans, ee_link_name);
 	// cout << ee_trans.translation().transpose() << endl;
 	// cout << ee_trans.rotation() << endl;
-
-	// initialize GLFW window
-	GLFWwindow* window = glfwInitialize();
-
-    // set callbacks
-	glfwSetKeyCallback(window, keySelect);
 
 	// start the simulation
 	thread sim_thread(simulation, robot);
@@ -90,62 +95,12 @@ int main (int argc, char** argv) {
 	    hapticDevice->setEnableGripperUserSwitch(true);
 	}
 
-	// set a line to visualize the applied force
-	auto haptic_force_line = new cShapeLine();
-    haptic_force_line->setShowEnabled(false);
-    haptic_force_line->setLineWidth(4.0);
-    if (fHapticDeviceEnabled) {
-    	graphics->_world->addChild(haptic_force_line);
-    }
-
-    // set a line to visualize the applied force
-    auto font = chai3d::NEW_CFONTCALIBRI40();
-    auto haptic_force_label = new chai3d::cLabel(font);
-    auto camera = graphics->getCamera(camera_name);
-    camera->m_frontLayer->addChild(haptic_force_label);
-    haptic_force_label->setText(
-    	"Haptic force: " +
-    	to_string(F_haptic[0]) +
-    	", " +
-    	to_string(F_haptic[1]) +
-    	", " +
-    	to_string(F_haptic[2])
-	);
-
 	thread haptics_thread(haptic, hapticDevice);
 
     // while window is open:
-    Eigen::Vector3d robot_eff_pos;
-    robot_eff_pos.setZero();
-    while (!glfwWindowShouldClose(window)) {
-		// update haptic display line
-		robot->position(robot_eff_pos, "link1", Eigen::Vector3d(1.0, 0.0, 0.0));
-		haptic_force_line->m_pointA = robot_eff_pos;
-		haptic_force_line->m_pointB = chai3d::cVector3d(robot_eff_pos + 0.1*F_haptic);
-		haptic_force_line->m_pointB.z(0.0);
-		haptic_force_line->setShowEnabled(true);
-
-		// update haptic force label
-		haptic_force_label->setText(
-	    	"Haptic force: " +
-	    	to_string(F_haptic[0]) +
-	    	", " +
-	    	to_string(F_haptic[1]) +
-	    	", " +
-	    	to_string(F_haptic[2])
-		);
-
-
-		// update graphics. this automatically waits for the correct amount of time
-		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
-		graphics->updateGraphics(robot_name, robot);
-		graphics->render(camera_name, width, height);
-		glfwSwapBuffers(window);
-		glFinish();
-
-	    // poll for events
-	    glfwPollEvents();
+	while (graphics->isWindowOpen()) {
+		graphics->updateRobotGraphics(robot_name, robot->q());
+		graphics->renderGraphicsWorld();
 	}
 
 	// stop simulation
@@ -153,17 +108,11 @@ int main (int argc, char** argv) {
 	sim_thread.join();
 	haptics_thread.join();
 
-    // destroy context
-    glfwDestroyWindow(window);
-
-    // terminate
-    glfwTerminate();
-
 	return 0;
 }
 
 //------------------------------------------------------------------------------
-void simulation(SaiModel::SaiModel* robot) {
+void simulation(shared_ptr<SaiModel::SaiModel> robot) {
 	fSimulationRunning = true;
 
 	// create a timer
@@ -180,16 +129,10 @@ void simulation(SaiModel::SaiModel* robot) {
 	double dq0 = 0.0;
 	double dq1 = 0.0;
 
-	double vxe = 0.0;
-	double vye = 0.0;
+	double scale = 10.0;
 
-	Eigen::Matrix2d J;
-	J.setZero();
-
-	double scale = 50.0;
-
-	double fxh = 0.0;
-	double fyh = 0.0;
+	Eigen::VectorXd robot_q = robot->q();
+	Eigen::VectorXd robot_dq = robot->dq();
 
 	bool fTimerDidSleep = true;
 	while (fSimulationRunning) {
@@ -198,7 +141,8 @@ void simulation(SaiModel::SaiModel* robot) {
 		// integrate joint velocity to joint positions
 		double curr_time = timer.elapsedTime();
 		double loop_dt = curr_time - last_time; 
-		robot->_q += robot->_dq*loop_dt;
+		robot_q += robot->dq() * loop_dt;
+		robot->setQ(robot_q);
 
 		// if (!fTimerDidSleep) {
 		// 	cout << "Warning: timer underflow! dt: " << loop_dt << "\n";
@@ -208,38 +152,70 @@ void simulation(SaiModel::SaiModel* robot) {
 		robot->updateModel();
 		
 		// get q0, q1
-		q0 = robot->_q[0]; // in radians
-		q1 = robot->_q[1]; // in radians
+		q0 = robot->q()[0]; // in radians
+		q1 = robot->q()[1]; // in radians
 
 		// get haptic device velocity
 		vhx = haptic_device_velocity[0];
 		vhy = haptic_device_velocity[1];
 		vhz = haptic_device_velocity[2];
 		
-		// get vxe and vye from haptic device
-		vxe = haptic_device_velocity[0] * scale;
-		vye = haptic_device_velocity[1] * scale;
+		// scale the velocity
+		double vxe = vhx * scale;
+		double vye = vhy * scale;
+
+		// ------------------------------------
+		// Dq0 = cos(q0+q1)vxe+sin(q0+q1)vye/ sin(q1)
+		// Dq1 = - ((cos q0 + cos(q0+q1))vxe + (sin(q0)+sin(q0+q1))vye)/sin(q1)
+		// FILL ME IN: set new joint velocities given vxe, vye, q0 and q1
+		// NOTE: These should be entered in radians/second. Not in degrees/second.
+		dq0 = ((cos(q0 + q1) * vxe )+ (sin(q0 + q1) * vye)) / sin(q1);
+		dq1 = -((cos(q0) + cos(q0 + q1)) * vxe + (sin(q0) + sin(q0 + q1)) * vye) / sin(q1);		
+		// ------------------------------------
+		// FILL ME IN: set new joint velocities given vxe, vye, q0 and q1
+		// NOTE: These should be entered in radians/second. Not in degrees/second.
 		
-		J << -sin(q0) - sin(q0+q1), - sin(q0+q1),
-		cos(q0) + cos(q0+q1), cos(q0+q1); 
-
-		Eigen::Vector2d dq_vec = J.inverse() * Eigen::Vector2d(vxe, vye);
-		dq0 = dq_vec[0];
-		dq1 = dq_vec[1];
-
-		// ------------------------------------
-		// FILL ME IN: set force on haptic device, fx and fy
-		fxh = 0.0;
-		fyh = 0.0;
-
-		// ------------------------------------
-		F_haptic << fxh, fyh, 0.0;
 
 		// ------------------------------------
 
-		robot->_dq << dq0, dq1;
+		robot_dq << dq0, dq1;
+		robot->setDq(robot_dq);
 		
 		// ------------------------------------
+
+		//  Fhaptic = -p/||p|| * 1/(R- ||p||)^k c^k0 +c1------------------------------------
+        // FILL ME IN: set force on haptic device, fx and fy
+        //p = [xe, ye, 0] is the 3D position of the robot’s hand
+        //||p|| = the distance of the hand from the origin given by square-root of (xe*xe + ye*ye)
+        //R = 2 is the radius of the robot’s workspace in distance units.
+        //k is an exponent parameter that determines how the force increases as the robot’s hand gets closer to the workspace boundary (Hint: you can try different values  between 1 and 10)
+        //c0 and c1 are positive valued parameters that control the scaling of the force. If c0 is too large, the force will decrease quickly as you move the robot’s hand away from the workspace boundary. If c1 is too large, the maximum strength of the force felt (when the robot’s hand is at the workspace boundary) is reduced. (Hint: try values for c0 between 1.0 to 10.0, try values for c1 between 0.01 to 1.0)
+
+        double xe, ye;
+		double fxh = 0.0;
+		double fyh = 0.0;
+        //Xe = f(q0,q1) = cos(q0) + cos(q0+q1)
+        //Ye = g(q0,q1) = sin(q0) + sin(q0+q1) 
+        xe = cos(q0) + cos(q0+q1);
+        ye = sin(q0) + sin(q0+q1);
+
+        double p_norm = sqrt(xe*xe + ye*ye);
+        double R = 2.0;
+        double k = 3.0;
+        double c0 = 0.5;
+        double c1 = 0.5;       
+        if (p_norm < R) {
+            fxh = - (xe/p_norm) * (1.0/pow((R - p_norm), k)) * pow(c0, k) + c1;
+            fyh = - (ye/p_norm) * (1.0/pow((R - p_norm), k)) * pow(c0, k) + c1;
+        } else {
+            //if the robot's hand is outside the workspace, set the force to zero
+            fxh = 0.0;
+            fyh = 0.0;
+        }
+    
+        // ------------------------------------
+        F_haptic << fxh, fyh, 0.0;
+
 
 		// update last time
 		last_time = curr_time;
@@ -252,56 +228,7 @@ void haptic(cGenericHapticDevicePtr device) {
 	while (fHapticDeviceEnabled && fSimulationRunning) {
 		device->getLinearVelocity(device_vel);
 		haptic_device_velocity = device_vel.eigen();
-		// cout << haptic_device_velocity << endl;
 		device->setForce(F_haptic);
+		//cout << haptic_device_velocity << endl << endl;
 	}
-}
-
-//------------------------------------------------------------------------------
-GLFWwindow* glfwInitialize() {
-		/*------- Set up visualization -------*/
-    // set up error callback
-    glfwSetErrorCallback(glfwError);
-
-    // initialize GLFW
-    glfwInit();
-
-    // retrieve resolution of computer display and position window accordingly
-    GLFWmonitor* primary = glfwGetPrimaryMonitor();
-    const GLFWvidmode* mode = glfwGetVideoMode(primary);
-
-    // information about computer screen and GLUT display window
-	int screenW = mode->width;
-    int screenH = mode->height;
-    int windowW = 0.8 * screenH;
-    int windowH = 0.5 * screenH;
-    int windowPosY = (screenH - windowH) / 2;
-    int windowPosX = windowPosY;
-
-    // create window and make it current
-    glfwWindowHint(GLFW_VISIBLE, 0);
-    GLFWwindow* window = glfwCreateWindow(windowW, windowH, "Sai.0 - Task 4", NULL, NULL);
-	glfwSetWindowPos(window, windowPosX, windowPosY);
-	glfwShowWindow(window);
-    glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
-
-	return window;
-}
-
-//------------------------------------------------------------------------------
-
-void glfwError(int error, const char* description) {
-	cerr << "GLFW Error: " << description << endl;
-	exit(1);
-}
-
-//------------------------------------------------------------------------------
-
-void keySelect(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    // option ESC: exit
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        // exit application
-         glfwSetWindowShouldClose(window, 1);
-    }
 }

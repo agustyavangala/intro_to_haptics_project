@@ -34,8 +34,8 @@ const string camera_name = "camera_top";
 const string ee_link_name = "link1";
 
 /*  ----- TASK1 PARAMETERS ----- */
-double ROBOT_JOINT1_POSITION_DEG = 0.0;
-double ROBOT_JOINT2_POSITION_DEG = 90.0;
+double ROBOT_JOINT1_POSITION_DEG = 90;
+double ROBOT_JOINT2_POSITION_DEG = 90;
 
 /* ----------------------------- */
 
